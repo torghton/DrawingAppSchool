@@ -34,6 +34,10 @@ public class Screen extends JPanel implements KeyListener, MouseListener {
         initializeManagers();
 
         setUpGrid();
+
+        Pen pen = new Pen();
+        pen.setSize(5);
+        grid.setPaintBrush(pen);
     }
 
     private void setUpGrid() {

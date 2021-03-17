@@ -5,7 +5,6 @@ import AlexsGameEnhancers.Vector;
 import java.awt.Graphics;
 import java.awt.Color;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Grid implements Drawable, Clickable {
@@ -14,11 +13,19 @@ public class Grid implements Drawable, Clickable {
 
     private GridConstraints gridConstraints;
 
+    private PaintBrush paintBrush;
+
+    private PaintBrush eraser;
+
+    private Vector gridPosition;
+
     private int tileSize;
 
     public Grid() {
         setGridConstraints(new GridConstraints(20, 20));
         setTileSize(10);
+        setPaintBrush(new Pen());
+        setGridPosition(new Vector(100, 100));
 
         setUpTiles(gridConstraints);
     }
@@ -38,6 +45,10 @@ public class Grid implements Drawable, Clickable {
         }
     }
 
+    public void setGridPosition(Vector gridPosition) {
+        this.gridPosition = gridPosition;
+    }
+
     public void setGridConstraints(GridConstraints gridConstraints) {
         this.gridConstraints = gridConstraints;
         setUpTiles(gridConstraints);
@@ -47,22 +58,32 @@ public class Grid implements Drawable, Clickable {
         this.tileSize = tileSize;
     }
 
-    public void setTileColor(GridConstraints gridConstraints, Color color) {
-        Tile tileSelected = tiles.get(gridConstraints.getRows()).get(gridConstraints.getColumns());
-        tileSelected.setColor(color);
+    public void setTileColor(GridConstraints gridPosition, Color color) {
+        if(gridConstraints.compareTo(gridPosition) == 0) {
+            Tile tileSelected = tiles.get(gridPosition.getRows()).get(gridPosition.getColumns());
+            tileSelected.setColor(color);
+        }
+    }
+
+    public void setPaintBrush(PaintBrush paintBrush) {
+        this.paintBrush = paintBrush;
     }
 
     @Override
     public void drawSelf(Graphics g) {
+
+        int xPosition = (int) gridPosition.getXDirection();
+        int yPosition = (int) gridPosition.getYDirection();
+
         for(int row = 0; row < gridConstraints.getRows(); row++) {
             for(int column = 0; column < gridConstraints.getColumns(); column++) {
                 Tile currentTile = tiles.get(row).get(column);
 
                 g.setColor(currentTile.getColor());
-                g.fillRect(column*tileSize,row*tileSize, tileSize, tileSize);
+                g.fillRect(xPosition + column*tileSize,yPosition + row*tileSize, tileSize, tileSize);
 
                 g.setColor(Color.BLACK);
-                g.drawRect(column*tileSize,row*tileSize, tileSize, tileSize);
+                g.drawRect(xPosition + column*tileSize,yPosition + row*tileSize, tileSize, tileSize);
             }
         }
     }
@@ -74,7 +95,14 @@ public class Grid implements Drawable, Clickable {
 
     @Override
     public void mousePressed(Vector position, int mouseButton) {
-        setTileColor(positionToGridConstraints(position), new Color(0, 0, 0));
+        GridConstraints gridClickPosition = positionToGridConstraints(position);
+
+        if(mouseButton == 1)
+            paint(gridClickPosition, paintBrush, Color.BLACK);
+
+        if(mouseButton == 3)
+            paint(gridClickPosition, paintBrush, Color.WHITE);
+
     }
 
     @Override
@@ -82,9 +110,22 @@ public class Grid implements Drawable, Clickable {
 
     }
 
+    private void paint(GridConstraints mouseClickPosition, PaintBrush currentPaintBrush, Color color) {
+        int[][] paintPattern = paintBrush.paint(mouseClickPosition);
+
+        for(int row = 0; row < paintPattern.length; row++) {
+            for(int column = 0; column < paintPattern[row].length; column++) {
+                if(paintPattern[row][column] == 1) {
+                    GridConstraints currentIterationGridConstraints= new GridConstraints(row, column);
+                    setTileColor(GridConstraints.add(mouseClickPosition, currentIterationGridConstraints), color);
+                }
+            }
+        }
+    }
+
     private GridConstraints positionToGridConstraints(Vector position) {
-        int rowNum = (int) position.getYDirection()/tileSize;
-        int colNum = (int) position.getXDirection()/tileSize;
+        int rowNum = (int) (position.getYDirection() - gridPosition.getYDirection())/tileSize;
+        int colNum = (int) (position.getXDirection() - gridPosition.getXDirection())/tileSize;
 
         return new GridConstraints(rowNum, colNum);
     }
