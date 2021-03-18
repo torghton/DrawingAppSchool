@@ -41,7 +41,6 @@ public class MenuBar implements Drawable {
         fileButton.setBounds((int) location.getXDirection(), (int) location.getYDirection(), 60, (int) size.getHeight());
         fileButton.addActionListener((e) -> {
                 String selected = (String) fileButton.getSelectedItem();
-                System.out.println(selected);
                 if(selected != null) {
                     if(selected.equals("save")) {
                         File file = FileSaver.promptForSaveTextFile(jframe);
@@ -52,7 +51,6 @@ public class MenuBar implements Drawable {
                         File file = FileSaver.promptForLoadTextFile(jframe);
                         if (file != null) {
                             Grid savedGrid = (Grid) (FileSaver.loadObjectFromFile(file.getAbsolutePath()));
-                            System.out.println(savedGrid);
                             loadedListener.loaded(savedGrid);
                         }
                     } else if(selected.equals("clear")) {

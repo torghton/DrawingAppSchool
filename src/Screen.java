@@ -52,10 +52,8 @@ public class Screen extends JPanel implements KeyListener, MouseListener, MouseM
                 removeManagers(grid);
                 grid = null;
 
-                System.out.println("reached");
                 grid = savedGrid;
                 addManagers(grid);
-                System.out.println("reached2");
             }
 
             @Override

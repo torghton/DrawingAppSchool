@@ -61,7 +61,6 @@ public final class FileSaver {
     }
 
     public static void saveObjectToFile(String fileName, Object object) {
-        System.out.println(fileName);
         try {
             FileOutputStream file = new FileOutputStream(fileName);
             ObjectOutputStream out = new ObjectOutputStream(file);
@@ -70,9 +69,6 @@ public final class FileSaver {
 
             out.close();
             file.close();
-
-            System.out.println("Object has been serialized");
-
 
         } catch(IOException e) {
             e.printStackTrace();
@@ -88,8 +84,6 @@ public final class FileSaver {
 
             in.close();
             file.close();
-
-            System.out.println("Object has been de-serialized");
 
             return object;
         } catch(IOException | ClassNotFoundException e) {
