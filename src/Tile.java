@@ -1,6 +1,7 @@
 import java.awt.Color;
+import java.io.Serializable;
 
-public class Tile {
+public class Tile implements Serializable {
 
     Color color;
 

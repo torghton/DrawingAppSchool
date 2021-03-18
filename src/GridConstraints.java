@@ -1,4 +1,6 @@
-public class GridConstraints implements Comparable<GridConstraints> {
+import java.io.Serializable;
+
+public class GridConstraints implements Comparable<GridConstraints>, Serializable {
 
     public int rows;
 

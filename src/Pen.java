@@ -4,8 +4,9 @@ public class Pen extends PaintBrush {
 
     public Pen() {}
 
+
     @Override
-    int[][] paint(GridConstraints gridPosition) {
+    public int[][] paint() {
         int[][] points = new int[size][size];
 
         for(int[] row: points) {

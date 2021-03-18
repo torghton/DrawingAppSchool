@@ -1,20 +1,15 @@
 import AlexsGameEnhancers.*;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import java.awt.*;
 
-import java.awt.event.KeyListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 
 
-public class Screen extends JPanel implements KeyListener, MouseListener {
+public class Screen extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
 
     private final Dimension SCREENSIZE;
-
-    private ImageLoader imageLoader;
 
     private Updater updater;
 
@@ -24,27 +19,76 @@ public class Screen extends JPanel implements KeyListener, MouseListener {
 
     private KeyInteractor keyInteractor;
 
-    private Grid grid;
+    private MouseMotionManager mouseMotionManager;
 
-    public Screen(Dimension SCREENSIZE) {
+    private Grid grid;
+    private SideBar sideBar;
+    private MenuBar menuBar;
+
+    public Screen(Dimension SCREENSIZE, JFrame jframe) {
         this.SCREENSIZE = SCREENSIZE;
+        setLayout(null);
 
         setUpJPanel();
         setBackground(Color.WHITE);
         initializeManagers();
 
-        setUpGrid();
+        setupGrid();
+        setupSideBar();
+        setupMenuBar(jframe);
 
         Pen pen = new Pen();
-        pen.setSize(5);
+        pen.setSize(1);
         grid.setPaintBrush(pen);
     }
 
-    private void setUpGrid() {
+    private void setupMenuBar(JFrame jframe) {
+        menuBar = new MenuBar();
+        menuBar.setUpMenus(jframe, grid);
+        menuBar.addMenus(this);
+        menuBar.setLoadedListener(new LoadedListener() {
+            @Override
+            public void loaded(Grid savedGrid) {
+                removeManagers(grid);
+                grid = null;
+
+                System.out.println("reached");
+                grid = savedGrid;
+                addManagers(grid);
+                System.out.println("reached2");
+            }
+
+            @Override
+            public void cleared() {
+                grid.clear();
+            }
+        });
+        addManagers(menuBar, 3);
+    }
+
+    private void setupGrid() {
         grid = new Grid();
-        grid.setTileSize(20);
-        grid.setGridConstraints(new GridConstraints(20, 10));
+        grid.setTileSize(35);
+        grid.setGridPosition(new Vector(50, 200));
+        grid.setGridConstraints(new GridConstraints(12, 12));
         addManagers(grid, 0);
+    }
+
+    private void setupSideBar() {
+        sideBar = new SideBar();
+        sideBar.setLocation(new Vector(550, 0));
+        sideBar.setChangedEvent(new ChangedEvent() {
+            @Override
+            public void colorButtonPressedChanged(SideBar.ColorButton colorButton) {
+                grid.setPaintBrushColor(colorButton.getColor());
+            }
+
+            @Override
+            public void buttonPressed(Color color) {
+                grid.setPaintBrushColor(color);
+            }
+        });
+        addManagers(sideBar, 2);
     }
 
     private void initializeManagers() {
@@ -52,12 +96,14 @@ public class Screen extends JPanel implements KeyListener, MouseListener {
         drawableManager = new DrawableManager(5);
         clickManager = new ClickManager();
         keyInteractor = new KeyInteractor();
+        mouseMotionManager = new MouseMotionManager();
     }
 
     private void setUpJPanel() {
         setFocusable(true);
         addKeyListener(this);
         addMouseListener(this);
+        addMouseMotionListener(this);
     }
 
     private <T>void addManagers(T obj, int drawableLayer) {
@@ -76,23 +122,31 @@ public class Screen extends JPanel implements KeyListener, MouseListener {
         if(obj instanceof Clickable) {
             clickManager.addClickable((Clickable) obj);
         }
+
+        if(obj instanceof MouseMotionable) {
+            mouseMotionManager.addMouseMotionable((MouseMotionable) obj);
+        }
     }
 
     private <T>void addManagers(T obj) {
+        addManagers(obj, 0);
+    }
+
+    private <T> void removeManagers(T obj) {
         if(obj instanceof Updateable) {
-            updater.addUpdateable((Updateable) obj);
+            updater.removeUpdateable((Updateable) obj);
         }
 
         if(obj instanceof Drawable) {
-            drawableManager.addDrawable((Drawable) obj, 0);
-        }
-
-        if(obj instanceof KeyInteractable) {
-            keyInteractor.addKeyInteractable((KeyInteractable) obj);
+            drawableManager.removeDrawable((Drawable) obj);
         }
 
         if(obj instanceof Clickable) {
-            clickManager.addClickable((Clickable) obj);
+            clickManager.removeClickable((Clickable) obj);
+        }
+
+        if(obj instanceof MouseMotionable) {
+            mouseMotionManager.removeMouseMotionable((MouseMotionable) obj);
         }
     }
 
@@ -157,4 +211,14 @@ public class Screen extends JPanel implements KeyListener, MouseListener {
 
     @Override
     public void mouseExited(MouseEvent e) {}
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        mouseMotionManager.mouseMoved(new Vector(e.getX(), e.getY()));
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+
+    }
 }

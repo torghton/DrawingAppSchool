@@ -1,10 +1,11 @@
 package AlexsGameEnhancers;
 
+import java.io.Serializable;
 import java.lang.Math;
 
 import java.awt.Point;
 
-public class Vector implements Cloneable {
+public class Vector implements Cloneable, Serializable {
 	public double xDir;
 	public double yDir;
 	
